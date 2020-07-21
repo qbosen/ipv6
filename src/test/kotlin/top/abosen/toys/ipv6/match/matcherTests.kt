@@ -13,11 +13,11 @@ import org.junit.jupiter.api.TestInstance
 
 class ExceptionTest {
 
-    private lateinit var matcherMgr: RouteMatcherMgr<String>
+    private lateinit var matcherMgr: MatcherBuilder<String>
 
     @BeforeEach
     fun `初始化默认mgr`() {
-        matcherMgr = RouteMatcherMgr(String::class.java)
+        matcherMgr = MatcherBuilder()
     }
 
     @Test
@@ -40,7 +40,7 @@ class ExceptionTest {
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class `测试CIDR表示法` {
-    private lateinit var matcherMgr: RouteMatcherMgr<Handler>
+    private lateinit var matcher: RouteMatcher<Handler>
 
     enum class Handler {
         `168网段`,
@@ -53,37 +53,37 @@ class `测试CIDR表示法` {
 
     @BeforeAll
     fun `初始化默认mgr`() {
-        matcherMgr = RouteMatcherMgr(Handler::class.java).apply {
+        matcher = with(MatcherBuilder<Handler>()) {
             register("192.168.0.0/16", Handler.`168网段`)
             register("127.0.0.1", Handler.确定的ip)
             register("10.7.23.0/24", Handler.`23网段`)
             register("fe80::/64", Handler.`ipv6-64`)
             register("fc00::/7", Handler.`fc00-7`)
-
+            build()
         }
     }
 
     @Test
     fun `测试CIDR 表示法`() {
-        assertEquals(Handler.`168网段`, matcherMgr.matching("192.168.6.30"))
-        assertEquals(Handler.确定的ip, matcherMgr.matching("127.0.0.1"))
-        assertNull(matcherMgr.matching("127.0.0.2"))
-        assertEquals(Handler.`23网段`, matcherMgr.matching("10.7.23.1"))
-        assertEquals(Handler.`23网段`, matcherMgr.matching("10.7.23.255"))
-        assertNull( matcherMgr.matching("10.7.24.255"))
-        assertEquals(Handler.`ipv6-64`, matcherMgr.matching("fe80::a28c:fdff:fec5:c0d5"))
-        assertEquals(Handler.`ipv6-64`, matcherMgr.matching("fe80:0000:0000:0000:0fff:0006:0000:0000"))
-        assertNull( matcherMgr.matching("fe80:0002:0003:0000:0000:0006:0000:0000"))
-        assertEquals(Handler.`fc00-7`, matcherMgr.matching("fc00::a28c:fdff:fec5:c0d5"))
-        assertEquals(Handler.`fc00-7`, matcherMgr.matching("fd00::1"))
-        assertNull( matcherMgr.matching("fe00::1"))
+        assertEquals(Handler.`168网段`, matcher.matching("192.168.6.30"))
+        assertEquals(Handler.确定的ip, matcher.matching("127.0.0.1"))
+        assertNull(matcher.matching("127.0.0.2"))
+        assertEquals(Handler.`23网段`, matcher.matching("10.7.23.1"))
+        assertEquals(Handler.`23网段`, matcher.matching("10.7.23.255"))
+        assertNull(matcher.matching("10.7.24.255"))
+        assertEquals(Handler.`ipv6-64`, matcher.matching("fe80::a28c:fdff:fec5:c0d5"))
+        assertEquals(Handler.`ipv6-64`, matcher.matching("fe80:0000:0000:0000:0fff:0006:0000:0000"))
+        assertNull(matcher.matching("fe80:0002:0003:0000:0000:0006:0000:0000"))
+        assertEquals(Handler.`fc00-7`, matcher.matching("fc00::a28c:fdff:fec5:c0d5"))
+        assertEquals(Handler.`fc00-7`, matcher.matching("fd00::1"))
+        assertNull(matcher.matching("fe00::1"))
 
     }
 }
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class `测试 - * 表示法` {
-    private lateinit var matcherMgr: RouteMatcherMgr<Handler>
+    private lateinit var matcher: RouteMatcher<Handler>
 
     enum class Handler {
         `168网段`,
@@ -96,52 +96,53 @@ class `测试 - * 表示法` {
 
     @BeforeAll
     fun `初始化默认mgr`() {
-        matcherMgr = RouteMatcherMgr(Handler::class.java).apply {
+        matcher = with(MatcherBuilder<Handler>()) {
             register("192.168.*.*", Handler.`168网段`)
             register("127.0.0.1", Handler.确定的ip)
             register("10.7-8.23.*", Handler.`23网段,7-8`)
             register("fe80:0:0:0:*", Handler.`ipv6-64`)
             register("fc00-fdff:*", Handler.`fc00-7`)
-
+            build()
         }
     }
 
     @Test
     fun `测试- * 表示法`() {
-        assertEquals(Handler.`168网段`, matcherMgr.matching("192.168.6.30"))
-        assertEquals(Handler.确定的ip, matcherMgr.matching("127.0.0.1"))
-        assertNull(matcherMgr.matching("127.0.0.2"))
-        assertEquals(Handler.`23网段,7-8`, matcherMgr.matching("10.7.23.1"))
-        assertEquals(Handler.`23网段,7-8`, matcherMgr.matching("10.8.23.255"))
-        assertNull( matcherMgr.matching("10.7.24.255"))
-        assertNull( matcherMgr.matching("10.8.24.255"))
-        assertEquals(Handler.`ipv6-64`, matcherMgr.matching("fe80::a28c:fdff:fec5:c0d5"))
-        assertEquals(Handler.`ipv6-64`, matcherMgr.matching("fe80:0000:0000:0000:0fff:0006:0000:0000"))
-        assertNull( matcherMgr.matching("fe80:0002:0003:0000:0000:0006:0000:0000"))
-        assertEquals(Handler.`fc00-7`, matcherMgr.matching("fc00::a28c:fdff:fec5:c0d5"))
-        assertEquals(Handler.`fc00-7`, matcherMgr.matching("fd00::1"))
-        assertNull( matcherMgr.matching("fe00::1"))
+        assertEquals(Handler.`168网段`, matcher.matching("192.168.6.30"))
+        assertEquals(Handler.确定的ip, matcher.matching("127.0.0.1"))
+        assertNull(matcher.matching("127.0.0.2"))
+        assertEquals(Handler.`23网段,7-8`, matcher.matching("10.7.23.1"))
+        assertEquals(Handler.`23网段,7-8`, matcher.matching("10.8.23.255"))
+        assertNull(matcher.matching("10.7.24.255"))
+        assertNull(matcher.matching("10.8.24.255"))
+        assertEquals(Handler.`ipv6-64`, matcher.matching("fe80::a28c:fdff:fec5:c0d5"))
+        assertEquals(Handler.`ipv6-64`, matcher.matching("fe80:0000:0000:0000:0fff:0006:0000:0000"))
+        assertNull(matcher.matching("fe80:0002:0003:0000:0000:0006:0000:0000"))
+        assertEquals(Handler.`fc00-7`, matcher.matching("fc00::a28c:fdff:fec5:c0d5"))
+        assertEquals(Handler.`fc00-7`, matcher.matching("fd00::1"))
+        assertNull(matcher.matching("fe00::1"))
     }
 }
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class `优先级测试`{
-    private lateinit var matcherMgr: RouteMatcherMgr<Int>
+class `优先级测试` {
+    private lateinit var matcher: RouteMatcher<Int>
 
     @BeforeAll
     fun `初始化默认mgr`() {
-        matcherMgr = RouteMatcherMgr(Int::class.java).apply {
-            register("192.168.*.*", 168,60)
-            register("192.168.6.*", 6,30)
-            register("192.168.6.30", 30,1)
+        matcher = with(MatcherBuilder<Int>()) {
+            register("192.168.*.*", 168, 60)
+            register("192.168.6.*", 6, 30)
+            register("192.168.6.30", 30, 1)
+            build()
         }
     }
 
     @Test
-    fun `优先级测试`(){
-        assertEquals(6, matcherMgr.matching("192.168.6.17"))
-        assertEquals(30, matcherMgr.matching("192.168.6.30"))
-        assertEquals(168, matcherMgr.matching("192.168.7.17"))
+    fun `优先级测试`() {
+        assertEquals(6, matcher.matching("192.168.6.17"))
+        assertEquals(30, matcher.matching("192.168.6.30"))
+        assertEquals(168, matcher.matching("192.168.7.17"))
     }
 
 }

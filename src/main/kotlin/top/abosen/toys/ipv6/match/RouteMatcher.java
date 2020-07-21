@@ -1,49 +1,32 @@
 package top.abosen.toys.ipv6.match;
 
 import inet.ipaddr.IPAddress;
-import org.jetbrains.annotations.NotNull;
+import inet.ipaddr.IPAddressString;
 
-import java.util.Comparator;
+import java.util.List;
 
 /**
  * @author qiubaisen
  * @date 2020/7/21
  */
-public class RouteMatcher<T> implements Comparable<RouteMatcher<T>>{
-    private int order;
-    private String pattern;
-    private T value;
-    private IPAddress address;
+public class RouteMatcher<T> {
 
-    protected RouteMatcher(String pattern, IPAddress address, T value, int order) {
-        this.pattern = pattern;
-        this.value = value;
-        this.order = order;
-        this.address = address;
+    private final List<MatcherInfo<T>> sortedList;
+
+    public RouteMatcher(List<MatcherInfo<T>> sortedList) {
+        this.sortedList = sortedList;
     }
 
+    public T matching(String ip) {
+        IPAddress otherIp = new IPAddressString(ip).getAddress();
+        if (otherIp == null) return null;
 
-    public boolean matches(IPAddress ip) {
-        return ip != null && address.contains(ip);
+        for (MatcherInfo<T> matcher : sortedList) {
+            if (matcher.matches(otherIp)) {
+                return matcher.getValue();
+            }
+        }
+        return null;
     }
 
-    @Override
-    public int compareTo(@NotNull RouteMatcher<T> o) {
-        return order - o.order;
-    }
-// region getter or setter
-
-    public int getOrder() {
-        return order;
-    }
-
-    public String getPattern() {
-        return pattern;
-    }
-
-    public T getValue() {
-        return value;
-    }
-
-// endregion getter or setter
 }
