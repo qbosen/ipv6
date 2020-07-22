@@ -26,7 +26,7 @@ import kotlin.concurrent.thread
 class Client(@Autowired private val config: Config) {
     @GetMapping("hello")
     fun hello(): String {
-        val transport = TSocket(config.host, config.port)
+        val transport = TSocket(config.connectHost, config.connectPort)
         val protocol = TBinaryProtocol(transport)
         transport.use {
             it.open()
@@ -42,6 +42,7 @@ class Client(@Autowired private val config: Config) {
 @Service
 class HelloServiceImpl(@Autowired private val config: Config) : HelloService.Iface {
     override fun hello(): String {
+        println("thrift invoke")
         return "hello world"
     }
 
@@ -49,7 +50,7 @@ class HelloServiceImpl(@Autowired private val config: Config) : HelloService.Ifa
 
     @PostConstruct
     fun server() {
-        val serverTransport: TServerTransport = TServerSocket(InetSocketAddress(config.host, config.port))
+        val serverTransport: TServerTransport = TServerSocket(InetSocketAddress(config.serverHost, config.serverPort))
         val server = TSimpleServer(TThreadPoolServer.Args(serverTransport).processor(HelloService.Processor(this)))
         this.server = server
         thread(isDaemon = true) {

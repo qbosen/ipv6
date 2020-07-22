@@ -5,7 +5,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
-import org.springframework.context.annotation.Configuration
 
 @SpringBootApplication
 @EnableConfigurationProperties(Config::class)
@@ -18,4 +17,4 @@ fun main(args: Array<String>) {
 
 @ConfigurationProperties("ipv6")
 @ConstructorBinding
-data class Config(val host: String,val port:Int)
+data class Config(val serverHost: String, val serverPort: Int, val connectHost: String, val connectPort: Int)
