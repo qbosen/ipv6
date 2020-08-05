@@ -146,3 +146,30 @@ class `优先级测试` {
     }
 
 }
+
+class `匹配所有测试` {
+    @Test
+    fun `匹配所有by cidr`() {
+        val matcher = MatcherBuilder<Int>()
+                .register("0.0.0.0/0", 1)
+                .register("::/0", 2).build()
+        assertEquals(1, matcher.matching("192.168.6.17"))
+        assertEquals(1, matcher.matching("192.168.6.30"))
+        assertEquals(1, matcher.matching("192.168.7.17"))
+        assertEquals(2, matcher.matching("fe80::a28c:fdff:fec5:c0d5"))
+        assertEquals(2, matcher.matching("fc00::"))
+        assertEquals(2, matcher.matching("fe80:0000:0000:0000:0fff:0006:0000:0000"))
+    }
+    @Test
+    fun `匹配所有by *`() {
+        val matcher = MatcherBuilder<Int>()
+                .register("*.*.*.*", 1)
+                .register("*:*:*:*:*:*:*:*", 2).build()
+        assertEquals(1, matcher.matching("192.168.6.17"))
+        assertEquals(1, matcher.matching("192.168.6.30"))
+        assertEquals(1, matcher.matching("192.168.7.17"))
+        assertEquals(2, matcher.matching("fe80::a28c:fdff:fec5:c0d5"))
+        assertEquals(2, matcher.matching("fc00::"))
+        assertEquals(2, matcher.matching("fe80:0000:0000:0000:0fff:0006:0000:0000"))
+    }
+}
